@@ -1,2 +1,1 @@
-# Ciga-compare
-PyQt ciga compare GUI
+# Ciga compare
