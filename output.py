@@ -5,6 +5,7 @@
 # Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
+import os
 import sys
 import json
 from db import *
@@ -28,19 +29,12 @@ class Ui_MainWindow(QWidget):
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
-        self.ciga_config = {}
-        self.data_from_json()
-        # self.MainWindow = QWidget
-        # self.setupUi()
-        # self.initUI()
-
-    # def initUI(self):
-    #     self.setGeometry(100, 100, 300, 300)
-    #     self.setWindowTitle("Icon")
+        self.ciga_config = self.data_from_json()
+        self.fname = ''
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(983, 596)
+        MainWindow.resize(1050, 596)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
@@ -50,7 +44,7 @@ class Ui_MainWindow(QWidget):
 
         self.compareButton = QtWidgets.QPushButton("Compare",self.centralwidget)
         self.compareButton.setObjectName("compareButton")
-        self.compareButton.clicked.connect(self.data_from_json)
+        self.compareButton.clicked.connect(self.compare_placements)
         self.grid.addWidget(self.compareButton, 0, 0)
 
         self.saveButton = QtWidgets.QPushButton("Save",self.centralwidget)
@@ -58,40 +52,78 @@ class Ui_MainWindow(QWidget):
         self.saveButton.clicked.connect(self.save_current_placement)
         self.grid.addWidget(self.saveButton, 0, 1)
 
-        self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
-        self.grid.addWidget(self.progressBar, 0, 2)
-        self.progressBar.setProperty("value", 24)
-        self.progressBar.setObjectName("progressBar")
+        self.loadButton = QtWidgets.QPushButton("Load",self.centralwidget)
+        self.loadButton.setObjectName("loadButton")
+        self.loadButton.clicked.connect(self.load_placement)
+        self.grid.addWidget(self.loadButton, 0, 2)
+
+        self.filename_label = QtWidgets.QLabel("File: %s" % self.fname, self.centralwidget)
+        self.filename_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.grid.addWidget(self.filename_label, 0, 3)
+
+        # self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
+        # self.grid.addWidget(self.progressBar, 0, 2)
+        # self.progressBar.setProperty("value", 24)
+        # self.progressBar.setObjectName("progressBar")
+
+        self.scroll_grid = QGridLayout(self)
+        self.scroll_grid.setSpacing(1)
+        
+        self.scrollArea = QtWidgets.QScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+        # self.scrollArea.setWidget(self.scrollAreaWidget)
+
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        # self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0,0,950,586))
+        self.scroll_grid.addWidget(self.scrollAreaWidgetContents, 0,0)    
+        
+        self.grid_2 = QGridLayout(self.scrollAreaWidgetContents)
+        self.placement()
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.grid.addWidget(self.scrollArea, 1, 0, 1, 10)
+
+
+        self.centralwidget.setLayout(self.grid)
+        self.centralwidget.setGeometry(0, 0, 1050, 596)
 
         
+    def placement(self):
+    
 
         for count, i in enumerate(self.ciga_config.keys()):
             # print(count, i)
-            self.groupBox = QtWidgets.QGroupBox(i, self.centralwidget)
+            self.groupBox = QtWidgets.QGroupBox(i, self.scrollAreaWidgetContents)
             # self.groupBox.setGeometry(QtCore.QRect(10, 40, 971, 161))
             self.groupBox.setObjectName(i)
-            count += 1
+            # count += 1
             # print('Object name:', self.groupBox.objectName())
-            self.grid.addWidget(self.groupBox, count, 0, 1, 3)
+            self.grid_2.addWidget(self.groupBox, count, 0, 1, 1)
 
             groupBox_grid = QGridLayout()
             groupBox_grid.setSpacing(10)
 
             for c, j in enumerate(self.ciga_config[i].keys()):
                 # print(j, self.ciga_config[i][j])
-                name, image = select_item(DB_CONNECTION, self.ciga_config[i][j])
+                try:
+                    name, image = select_item(DB_CONNECTION, self.ciga_config[i][j])
+                except TypeError as e:
+                    print("Can`t load data from db\n %s" % e)
                 # print(name, image)
                 self.graphicsView = QLabel_alterada(self.groupBox)
-                self.graphicsView.setObjectName("%s_%s_%s" % (i, j, name))
-                pixmap = QtGui.QPixmap(image)
+                self.graphicsView.setAlignment(QtCore.Qt.AlignCenter)
+                self.graphicsView.setObjectName("%s:%s:%s" % (i, j, name))
+                pixmap = self.pixmap_check(image)
                 pixmap_scale = pixmap.scaledToWidth(50)
                 self.graphicsView.setPixmap(pixmap_scale)
                 self.graphicsView.filename = image
                 self.graphicsView.clicked.connect(self.imageClicked)
                 groupBox_grid.addWidget(self.graphicsView, 0,c)
 
-                self.label = QtWidgets.QLabel(name, self.groupBox)
-                self.label.setObjectName("%s_%s_%s_label" % (i, j, name))
+                name_spl = '\n'.join(name.split('_'))
+                self.label = QtWidgets.QLabel(name_spl, self.groupBox)
+                self.label.setAlignment(QtCore.Qt.AlignCenter)
+                self.label.setObjectName("%s:%s:%s_label" % (i, j, name))
                 groupBox_grid.addWidget(self.label, 1,c)
 
 
@@ -99,83 +131,107 @@ class Ui_MainWindow(QWidget):
         
         
 
-        # MainWindow.setCentralWidget(self.centralwidget)
+        MainWindow.setCentralWidget(self.centralwidget)
         # self.menubar = QtWidgets.QMenuBar(MainWindow)
         # self.menubar.setGeometry(QtCore.QRect(0, 0, 983, 21))
         # self.menubar.setObjectName("menubar")
+
+        # self.filemenu = self.menubar.addMenu('File')
+        # self.loadAct = QtWidgets.QAction("Load", self)
+        # self.saveAct = QtWidgets.QAction("Save", self)
+
+        # self.filemenu.addAction(self.loadAct)
+        # self.filemenu.addAction(self.saveAct)
+
         # self.menuExit = QtWidgets.QMenu(self.menubar)
         # self.menuExit.setObjectName("menuExit")
+
         # MainWindow.setMenuBar(self.menubar)
-        # self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        # self.statusbar.setObjectName("statusbar")
-        # MainWindow.setStatusBar(self.statusbar)
+
+        self.exitAct = QtWidgets.QAction(QtGui.QIcon('/images/icons/exit.png'), 'Exit', MainWindow)
+        self.exitAct.setShortcut('Ctrl+Q')
+        self.exitAct.setStatusTip('Exit application')
+        self.exitAct.triggered.connect(MainWindow.close)
+
+        self.toolbar = MainWindow.addToolBar('Exit')
+        self.toolbar.addAction(self.exitAct)
+
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
         # self.menubar.addAction(self.menuExit.menuAction())
 
-        # self.retranslateUi(MainWindow)
-        # QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        # # self.show()
-        self.centralwidget.setLayout(self.grid)
-        self.centralwidget.setGeometry(0, 0, 983, 596)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.compareButton.setText(_translate("MainWindow", "Compare"))
-        self.groupBox.setTitle(_translate("MainWindow", "Shelf 1"))
-        self.label.setText(_translate("MainWindow", "Label"))
-        self.label_2.setText(_translate("MainWindow", "Status"))
-        self.label_3.setText(_translate("MainWindow", "Label"))
-        self.label_4.setText(_translate("MainWindow", "Status"))
-        self.label_5.setText(_translate("MainWindow", "Label"))
-        self.label_6.setText(_translate("MainWindow", "Status"))
-
-
-    def data_from_json(self):
-        file = 'ciga_conf.json'
+    def data_from_json(self, file='ciga_conf.json'):
+        
         with open(file, 'r') as f:
             json_data = f.read()
-        self.ciga_config = json.loads(json_data)
+        config = json.loads(json_data)
+        return config
 
     def imageClicked(self):
         print("Click on label")
-        # self.print_child()
         sender = self.sender()
         self.dialog = SelectionWindow(self)
-        # self.dialog.initUI(self.centralwidget)
-        # self.dialog.show()
         self.updObjName = sender.objectName()
 
-    def printRes(self, value):
-        print(value)
+    def pixmap_check(self, image):
+        if os.path.isfile(image):
+            pixmap = QtGui.QPixmap(image)
+        else:
+            pixmap = QtGui.QPixmap('images/noimage.png')
+        return pixmap
 
-    def updateItem(self, name, image):
-        obj = self.centralwidget.findChild(QLabel, self.updObjName)
-        print(self.updObjName)
-        # print(dir(obj))
-        pixmap = QtGui.QPixmap(image)
-        pixmap_scale = pixmap.scaledToWidth(50)
-        obj.setPixmap(pixmap_scale)
-
-        obj_label = self.centralwidget.findChild(QLabel, "%s_label" %self.updObjName)
-        # print(dir(obj_label))
-        obj_label.setText(name)
-
-        self.updateConfig(name)
-
-    def updateConfig(self, name):
-        shelf, id, bundle = self.updObjName.split('_')
+    def update_placement(self, name):
+        shelf, id, bundle = self.updObjName.split(':')
         self.ciga_config[shelf][id] = name
+        print(self.ciga_config[shelf][id])
+        # self.scrollAreaWidgetContents.update()
+        self.clearLayout(self.grid_2)
+        self.placement()
 
     def save_current_placement(self):
         with open('new_config.json', 'w') as file:
             json.dump(self.ciga_config, file)
+
+    def load_placement(self):
+        self.fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', '.')[0]
+        self.ciga_config = self.data_from_json(self.fname)
+        # print(self.ciga_config)
+        self.filename_label.setText(self.fname)
+        self.clearLayout(self.grid_2)
+        self.placement()
+
+    def compare_placements(self, placement):
+        data = self.data_from_json('new_config.json')
+        for i in data.keys():
+            for j in data[i].keys():
+                obj = self.centralwidget.findChild(QLabel, "%s:%s:%s_label" % (i, j, self.ciga_config[i][j]))
+                if data[i][j] == self.ciga_config[i][j]:
+                    obj.setStyleSheet('color: green')
+                else:
+                    obj.setStyleSheet('color: red')
+                    obj.setToolTip(data[i][j])
+
+    def clearLayout(self, layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget() is not None:
+                child.widget().deleteLater()
+            elif child.layout() is not None:
+                clearLayout(child.layout())
+
+    
+
 
 
 class SelectionWindow(Ui_MainWindow):
     def __init__(self, parentWindow):
         super(SelectionWindow, self).__init__()
         self.parentWindow = parentWindow
-        self.parentWindow.printRes("child window")
+        # self.parentWindow.printRes("child window")
 
         self.name = ''
         self.image = ''
@@ -185,46 +241,65 @@ class SelectionWindow(Ui_MainWindow):
 
     def initUI(self):
         
-
-        self.resize(300,300)
-
         items = select_all(DB_CONNECTION)
-        print(items)
 
-        changeItem_grid = QGridLayout()
-        changeItem_grid.setSpacing(10)
+        self.resize(917,647)
 
+        self.grid = QGridLayout(self)
+        self.grid.setSpacing(10)
+        
+        self.scrollArea = QtWidgets.QScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+        # self.scrollArea.setWidget(self.scrollAreaWidget)
+
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0,0,897,586))
+    
+        self.grid_2 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
+
+        # self.grid.addWidget(self.scrollArea)
+
+        row = 0
+        col = 0
         for c, i in enumerate(items):
-            print(i)
+            # print(c, row)
+            if c % 5 == 0:
+                row +=2
+                col = 0
             name, image = i
             # print(name, image)
-            self.graphicsView = QLabel_alterada(self)
+            self.graphicsView = QLabel_alterada(self.scrollAreaWidgetContents)
             self.graphicsView.setObjectName(name)
-            pixmap = QtGui.QPixmap(image)
+            self.graphicsView.setAlignment(QtCore.Qt.AlignCenter)
+            self.graphicsView.setMinimumSize(104, 172)
+            pixmap = self.pixmap_check(image)
+            # print(pixmap)
             pixmap_scale = pixmap.scaledToWidth(50)
             self.graphicsView.setPixmap(pixmap_scale)
             self.graphicsView.name = name
             self.graphicsView.image = image
             self.graphicsView.clicked.connect(self.returnEvent)
-            changeItem_grid.addWidget(self.graphicsView, 0,c)
+            self.grid_2.addWidget(self.graphicsView, row,col)
 
             self.label = QtWidgets.QLabel(name, self)
+            self.label.setAlignment(QtCore.Qt.AlignCenter)
             self.label.setObjectName("%s_label" % name)
-            changeItem_grid.addWidget(self.label, 1,c)
+            self.grid_2.addWidget(self.label, row+1,col)
 
-        self.setLayout(changeItem_grid)
-    
+            col += 1
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.grid.addWidget(self.scrollArea, 1, 0, 1, 1)
+
     def returnEvent(self):
         sender = self.sender()
         self.name = sender.name
-        self.image = sender.image
+        # self.image = sender.image
         self.close()
 
     def closeEvent(self, event):
-        if self.name and self.image:
-            self.parentWindow.updateItem(self.name, self.image)
-        else:
-            pass
+        if self.name:# and self.image:
+            self.parentWindow.update_placement(self.name)
 
 
 
@@ -234,7 +309,6 @@ if __name__ == '__main__':
     w = Ui_MainWindow()
     w.setupUi(MainWindow)
     MainWindow.show()
-    # w.show()
     
     sys.exit(app.exec_())
 

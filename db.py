@@ -1,3 +1,4 @@
+import csv
 import sqlite3
 from sqlite3 import Error
 
@@ -35,6 +36,15 @@ def insert_data(conn, sql_insert):
 
 	# conn.close()
 
+def multy_insert(conn, data):
+	query = """INSERT INTO cigarettes(name, image) values (?, ?)"""
+	try:
+		c = conn.cursor()
+		c.executemany(query, data)
+		conn.commit()
+	except Error as e:
+		print("Error! can`t insert data %s" % e)
+
 def select_all(conn):
 	query = """SELECT name, image FROM cigarettes"""
 	try:
@@ -64,18 +74,18 @@ def test():
 										name text NOT NULL,
 										image text NOT NULL
 										);"""
-	data = ('Bond', 'Bond.jpg')
-	sql_insert = """INSERT INTO cigarettes(name, image) values ("LM", "LM.jpg")"""
-	sql_select = """SELECT * FROM cigarettes"""
+	# data = ('Bond', 'Bond.jpg')
+	# sql_insert = INSERT INTO cigarettes(name, image) values ("LM", "LM.jpg")
+	# sql_select = """SELECT * FROM cigarettes"""
 
 	conn = create_connection(database)
 
 	if conn is not None:
 		create_table(conn, sql_create_cigarettes_table)
 		print("Creating table")
-		insert_data(conn, sql_insert)
-		res = select_data(conn, sql_select)
-		print(res)
+		# insert_data(conn, sql_insert)
+		# res = select_data(conn, sql_select)
+		# print(res)
 
 	else:
 		print("Error! cannot create database connecion.")
@@ -83,7 +93,20 @@ def test():
 	conn.close()
 
 if __name__ == "__main__":
-	conn = create_connection('test.db')
-	# test()
-	name, image = select_item(conn, 'Bond')
-	print(name, image)
+	# conn = create_connection('test.db')
+	# # test()
+	# name, image = select_item(conn, 'Bond')
+	# print(name, image)
+	test()
+	ls = []
+	with open("class_cigarettes.csv", "r") as f:
+		reader = csv.reader(f)
+
+		for row in reader:
+			data = row[0].split(',')[0]
+			name = data
+			image = "images/%s.jpg" % data
+			ls.append((name, image))
+	print(ls)
+	conn = create_connection("test.db")
+	multy_insert(conn, ls)

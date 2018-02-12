@@ -1,14 +1,14 @@
 {
 	"Shelf1":
 		{
-			"1": "Bond", "2":"LM", "3":"LD", "4": "Bond", "5":"LM", "6":"LD", "7": "Bond", "8":"LM", "9":"LD", "10": "Bond", "11":"LM", "12":"LD"
+			"1": "Bond_Premium_Silver", "2":"LM_Loft_Blue", "3":"LD_Blue", "4": "Bond_Premium_Silver", "5":"LM_Loft_Blue", "6":"LD_Blue", "7": "Bond_Premium_Silver", "8":"LM_Loft_Blue", "9":"LD_Blue", "10": "Bond_Premium_Silver", "11":"LM_Loft_Blue", "12":"LD_Blue"
 		},
 	"Shelf2":
 	{
-		"1": "Bond", "2":"LM", "3":"LD", "4": "Bond", "5":"LM", "6":"LD", "7": "Bond", "8":"LM", "9":"LD", "10": "Bond", "11":"LM", "12":"LD"
+		"1": "Bond_Premium_Silver", "2":"LM_Loft_Blue", "3":"LD_Blue", "4": "Bond_Premium_Silver", "5":"LM_Loft_Blue", "6":"LD_Blue", "7": "Bond_Premium_Silver", "8":"LM_Loft_Blue", "9":"LD_Blue", "10": "Bond_Premium_Silver", "11":"LM_Loft_Blue", "12":"LD_Blue"
 	},
 	"Shelf3":
 	{
-		"1": "Bond", "2":"LM", "3":"LD", "4": "Bond", "5":"LM", "6":"LD", "7": "Bond", "8":"LM", "9":"LD", "10": "Bond", "11":"LM", "12":"LD"
+		"1": "Bond_Premium_Silver", "2":"LM_Loft_Blue", "3":"LD_Blue", "4": "Bond_Premium_Silver", "5":"LM_Loft_Blue", "6":"LD_Blue", "7": "Bond_Premium_Silver", "8":"LM_Loft_Blue", "9":"LD_Blue", "10": "Bond_Premium_Silver", "11":"LM_Loft_Blue", "12":"LD_Blue"
 	}
 }
